@@ -2,24 +2,28 @@ install_packages:
   - 'postfix'
 main_config:                    '/etc/postfix/main.cf'
 lines_in_main_config:
-  - line:                       "smtpd_tls_cert_file = /etc/ssl/certs/{{ inventory_hostname }}.pem"
-    regexp:                     '^#{0,1} *smtpd_tls_cert_file *='
-  - line:                       "smtpd_tls_key_file = /etc/ssl/private/{{ inventory_hostname }}.pem"
-    regexp:                     '^#{0,1} *smtpd_tls_key_file *='
+  - line:                       "smtp_tls_cert_file = /etc/ssl/certs/{{ inventory_hostname }}.pem"
+    regexp:                     '^#{0,1} *smtp_tls_cert_file *='
+  - line:                       "smtp_tls_key_file = /etc/ssl/private/{{ inventory_hostname }}.pem"
+    regexp:                     '^#{0,1} *smtp_tls_key_file *='
   - line:                       "myhostname = {{ inventory_hostname }}.{{ domain }}"
     regexp:                     '^#{0,1} *myhostname *='
   - line:                       "myorigin = {{ domain }}"
     regexp:                     '^#{0,1} *myorigin *='
   - line:                       "mydestination = {{ inventory_hostname }}, {{ inventory_hostname }}.{{ domain }}, localhost, localhost.{{ domain }}, localhost.localdomain"
     regexp:                     '^#{0,1} *mydestination *='
-  - line:                       "smtpd_tls_security_level = encrypt"
-    regexp:                     '^#{0,1} *smtpd_tls_security_level *='
-  - line:                       'smtpd_tls_fingerprint_digest = sha256'
-    regexp:                     '^#{0,1} *smtpd_tls_fingerprint_digest *='
+  - line:                       "smtp_tls_security_level = encrypt"
+    regexp:                     '^#{0,1} *smtp_tls_security_level *='
+  - line:                       'smtp_tls_fingerprint_digest = sha256'
+    regexp:                     '^#{0,1} *smtp_tls_fingerprint_digest *='
   - line:                       'inet_protocols = ipv4'
     regexp:                     '^#{0,1} *inet_protocols *='
-  - line:                       "relayhost = {{ groups['mail_server'][0] }}"
+  - line:                       "relayhost = [{{ groups['mail_server'][0] }}]:587"
     regexp:                     '^#{0,1} *relayhost *='
+master_config:                  '/etc/postfix/master.cf'
+lines_in_master_config:
+  - line:                       '#smtp      inet  n       -       y       -       -       smtpd'
+    regexp:                     '^#{0,1} *submission[ $]'
 start_services:
   - 'postfix'
 restart_services:               "{{ start_services }}"
