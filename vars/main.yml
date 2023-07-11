@@ -18,7 +18,7 @@ lines_in_main_config:
     regexp:                     '^#{0,1} *smtp_tls_fingerprint_digest *='
   - line:                       'inet_protocols = ipv4'
     regexp:                     '^#{0,1} *inet_protocols *='
-  - line:                       "relayhost = [{{ groups['mail_server'][0] }}]:587"
+  - line:                       "relayhost = [{{ groups['mail-server'][0] }}]:587"
     regexp:                     '^#{0,1} *relayhost *='
 master_config:                  '/etc/postfix/master.cf'
 lines_in_master_config:
