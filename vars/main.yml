@@ -1,29 +1,33 @@
+smtp_users:
+  - 'nagios-notifications'
 install_packages:
   - 'postfix'
-main_config:                    '/etc/postfix/main.cf'
-lines_in_main_config:
-  - line:                       "smtp_tls_cert_file = /etc/ssl/certs/{{ inventory_hostname }}.pem"
-    regexp:                     '^#{0,1} *smtp_tls_cert_file *='
-  - line:                       "smtp_tls_key_file = /etc/ssl/private/{{ inventory_hostname }}.pem"
-    regexp:                     '^#{0,1} *smtp_tls_key_file *='
-  - line:                       "myhostname = {{ inventory_hostname }}.{{ domain }}"
-    regexp:                     '^#{0,1} *myhostname *='
-  - line:                       "myorigin = {{ domain }}"
-    regexp:                     '^#{0,1} *myorigin *='
-  - line:                       "mydestination = {{ inventory_hostname }}, {{ inventory_hostname }}.{{ domain }}, localhost, localhost.{{ domain }}, localhost.localdomain"
-    regexp:                     '^#{0,1} *mydestination *='
-  - line:                       "smtp_tls_security_level = encrypt"
-    regexp:                     '^#{0,1} *smtp_tls_security_level *='
-  - line:                       'smtp_tls_fingerprint_digest = sha256'
-    regexp:                     '^#{0,1} *smtp_tls_fingerprint_digest *='
-  - line:                       'inet_protocols = ipv4'
-    regexp:                     '^#{0,1} *inet_protocols *='
-  - line:                       "relayhost = [{{ groups['mail-server'][0] }}.{{ domain }}]:587"
-    regexp:                     '^#{0,1} *relayhost *='
-master_config:                  '/etc/postfix/master.cf'
-lines_in_master_config:
-  - line:                       '#smtp      inet  n       -       y       -       -       smtpd'
-    regexp:                     '^#{0,1} *submission[ $]'
+  - 'libsasl2-modules'
+install_files:
+  - owner:                      'root'
+    group:                      'root'
+    mode:                       '0644'
+    src:                        'files/master.cf'
+    dest:                       '/etc/postfix/master.cf'
+template_files:
+  - owner:                      'root'
+    group:                      'root'
+    mode:                       '0644'
+    src:                        'templates/main.cf.j2'
+    dest:                       '/etc/postfix/main.cf'
+  - owner:                      'root'
+    group:                      'root'
+    mode:                       '0600'
+    src:                        'templates/smtp_usernames_and_passwords.j2'
+    dest:                       '/etc/postfix/smtp_usernames_and_passwords'
+create_files:
+  - owner:                      'root'
+    group:                      'root'
+    mode:                       '0600'
+    state:                      'touch'
+    path:                       '/etc/postfix/smtp_usernames_and_passwords.db'
+shell_commands_ignore_change:
+  - command:                    postmap /etc/postfix/smtp_usernames_and_passwords
 start_services:
   - 'postfix'
 restart_services:               "{{ start_services }}"
